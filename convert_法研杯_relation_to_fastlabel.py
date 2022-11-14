@@ -16,10 +16,15 @@ def get_label_from_entity(text,pos,entities):
 
 
 
-def convert2fastlabel(src,dst):
-    with open(src,mode='r',encoding='utf-8') as f:
+def convert2fastlabel(in_file,out_file,out_file_e_labels,out_file_re_labels):
+
+    e_labels = set()
+    re_labels = set()
+
+
+    with open(in_file,mode='r',encoding='utf-8') as f:
         lines = f.readlines()
-    with open(dst,mode='w',encoding='utf-8',newline='\n') as f_out:
+    with open(out_file,mode='w',encoding='utf-8',newline='\n') as f_out:
         for i,line in enumerate(lines):
             jd = json.loads(line)
             text = jd['sentText']
@@ -29,6 +34,8 @@ def convert2fastlabel(src,dst):
                 s = es['start']
                 e = es['end'] - 1
                 l = es['label']
+                e_labels.add(l)
+
                 if l not in entities_new:
                     entities_new[l] = {}
                 l_o = entities_new[l]
@@ -54,6 +61,7 @@ def convert2fastlabel(src,dst):
                 label1 = get_label_from_entity(em1Text, pos1, entities_new)
                 label2 = get_label_from_entity(em2Text, pos2, entities_new)
 
+                re_labels.add((label1,label,label2))
                 assert label1 is not None and label2 is not None
                 entity1 = {
                     'entity': em1Text,
@@ -83,9 +91,22 @@ def convert2fastlabel(src,dst):
                 're_list': re_list_new
             },ensure_ascii=False) + '\n')
 
+    e_labels = list(e_labels)
+    re_labels = list(re_labels)
+    with open(out_file_e_labels,mode='w',encoding='utf-8',newline='\n') as f:
+        for l in e_labels:
+            f.write(l + '\n')
 
-
-
+    with open(out_file_re_labels, mode='w', encoding='utf-8', newline='\n') as f:
+        for (l1,l,l2) in re_labels:
+            f.write(json.dumps({
+                'subject': l1,
+                'predicate': l,
+                'object': l2
+            }) + '\n')
 if __name__ == "__main__":
-    convert2fastlabel(r'F:\nlpdata_2022\比赛\法研杯\cail2022_信息抽取_第一阶段\step1_train.json',
-                      r'F:\nlpdata_2022\比赛\法研杯\cail2022_信息抽取_第一阶段\step1_train-fastlabel.json')
+    in_file = r'F:\nlpdata_2022\比赛\法研杯\cail2022_信息抽取_第一阶段_fastlabel\data\step1_train.json'
+    out_file = r'F:\nlpdata_2022\比赛\法研杯\cail2022_信息抽取_第一阶段_fastlabel\data\step1_train-fastlabel.json'
+    out_file_e_labels =  r'F:\nlpdata_2022\比赛\法研杯\cail2022_信息抽取_第一阶段_fastlabel\data\entities_label.txt'
+    out_file_re_labels = r'F:\nlpdata_2022\比赛\法研杯\cail2022_信息抽取_第一阶段_fastlabel\data\relation_label.json'
+    convert2fastlabel(in_file,out_file,out_file_e_labels,out_file_re_labels)

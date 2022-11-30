@@ -108,7 +108,8 @@ def convert2labels(src,dst):
         print(labels)
         print(len(labels))
         for l in labels:
-            f_out.write(json.dumps(l,ensure_ascii=False) + '\n')
+            d = {"subject": l[0], "predicate": l[1], "object": l[2]}
+            f_out.write(json.dumps(d,ensure_ascii=False) + '\n')
 
 
 

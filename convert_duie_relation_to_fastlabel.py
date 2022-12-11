@@ -15,6 +15,7 @@ def get_label_from_entity(text,pos,entities):
     return None
 
 def get_pos(text: str,k: str):
+    assert k != '',ValueError('find error k=',k)
     p = text.find(k)
     assert p != -1, k
     if p == -1:
